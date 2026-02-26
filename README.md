@@ -1,17 +1,26 @@
 # ai-voice-kit
 
-Local AI voice tools for Claude Code. Text-to-speech with 50 voices, audio transcription with speaker identification. No cloud APIs, everything runs on your machine.
+Local AI voice tools for Claude Code. Text-to-speech with 50 voices, audio transcription with speaker identification, and strategic analysis that bridges the two. No cloud APIs, everything runs on your machine.
 
 ## What's in the box
 
-Two Claude Code skills that work standalone or chained together:
+Three Claude Code skills that work standalone or chained together:
 
 | Skill | Command | What it does |
 |-------|---------|-------------|
-| **Text to Voice** | `/text-to-voice notes.txt` | Converts any text file to MP3 using Kokoro TTS |
 | **Voice to Text** | `/voice-to-text meeting.m4a` | Transcribes audio with speaker identification |
+| **Strategic Analysis** | `/strategic-analysis transcript.txt` | Analyzes meetings with full project context, produces voice-ready output |
+| **Text to Voice** | `/text-to-voice analysis-voice.txt` | Converts any text file to MP3 using Kokoro TTS |
 
-**Chain them:** transcribe a meeting, then turn the summary back into audio.
+**The full chain:** record a meeting, transcribe it, get a strategic analysis with action items, then listen to the briefing as audio on your commute.
+
+```
+Voice memo → /voice-to-text → transcript
+                                  ↓
+                         /strategic-analysis → analysis.md + analysis-voice.txt
+                                                                   ↓
+                                                          /text-to-voice → briefing.mp3
+```
 
 ## Quick Start
 
@@ -26,6 +35,7 @@ git clone https://github.com/pengasuzie/ai-voice-kit.git
 # Copy skills to your Claude Code config
 cp -r ai-voice-kit/skills/text-to-voice ~/.claude/skills/
 cp -r ai-voice-kit/skills/voice-to-text ~/.claude/skills/
+cp -r ai-voice-kit/skills/strategic-analysis ~/.claude/skills/
 ```
 
 ### 2. Install Kokoro TTS
@@ -145,6 +155,48 @@ The skill will:
 
 Supports: `.m4a`, `.mp3`, `.wav`, `.flac`, `.ogg`, `.webm`, `.mp4`, `.mkv`, `.avi`
 
+## Strategic Analysis
+
+The middle skill in the chain. It reads a transcript (or any document), gathers context from your project directory, and produces two outputs:
+
+- `analysis.md` — full strategic analysis in markdown
+- `analysis-voice.txt` — TTS-optimized plain text, ready for `/text-to-voice`
+
+### Four analysis modes
+
+| Mode | Best for |
+|------|----------|
+| **Sales Deal Analysis** | Win probability, feature fit, competitive threats, next actions |
+| **Consulting Engagement** | What the client actually needs, AI opportunity map, engagement approach |
+| **Competitive / Market Signal** | Intelligence extraction, positioning, market trends |
+| **Meeting Debrief** | Clean summary, decisions, action items, open questions |
+
+### Project-aware
+
+The skill automatically reads your project's `CLAUDE.md`, docs, notes, competitor files, and git history before analyzing. This means the analysis is grounded in everything you know about the client, not just the transcript.
+
+### Basic usage
+
+```
+> /strategic-analysis transcript.txt
+
+What type of analysis?
+1. Sales Deal Analysis
+2. Consulting Engagement Analysis
+3. Competitive / Market Signal Analysis
+4. Meeting Debrief
+
+> 2
+
+Gathering project context...
+Reading CLAUDE.md, 3 docs, 2 competitor files...
+Analyzing transcript (4,231 words, 2 speakers)...
+
+Output:
+├── analysis.md            (strategic analysis)
+└── analysis-voice.txt     (TTS-ready, for /text-to-voice)
+```
+
 ## Examples
 
 ### Daily briefing from notes
@@ -161,20 +213,34 @@ Output:
 └── Engine: Kokoro, Voice: bf_lily
 ```
 
-### Transcribe and re-voice
+### Full chain: meeting to audio briefing
 
 ```
-> /voice-to-text interview.m4a
+# Step 1: Transcribe the recording
+> /voice-to-text client-call.m4a
 
 Transcribing... 2 speakers detected.
-Output: interview.txt (4,231 words)
+Output: client-call.txt (4,231 words)
 
-> /text-to-voice interview.txt
+# Step 2: Analyze the meeting
+> /strategic-analysis client-call.txt
+
+> 2  (Consulting Engagement)
+
+Gathering project context...
+Output:
+├── analysis.md            (strategic analysis)
+└── analysis-voice.txt     (TTS-ready)
+
+# Step 3: Generate the audio briefing
+> /text-to-voice analysis-voice.txt
 
 Output:
-├── interview.mp3     (audio — 18m 34s, 16.2 MB)
-└── Engine: Kokoro, Voice: am_adam
+├── analysis-voice.mp3     (audio — 6m 18s, 5.7 MB)
+└── Engine: Kokoro, Voice: bf_lily
 ```
+
+Listen to your briefing on the drive home.
 
 ## Optional Engine Setup
 
